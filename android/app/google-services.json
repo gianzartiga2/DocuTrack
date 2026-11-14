@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "758167328872",
+    "project_id": "docutrack-4f32d",
+    "storage_bucket": "docutrack-4f32d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:758167328872:android:d417aa15351477eea183dd",
+        "android_client_info": {
+          "package_name": "com.example.docutrack2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATxiM2wkQ5nGKmzttGz1P9EHIZfsoqN4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

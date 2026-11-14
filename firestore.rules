@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      ).data;
+    }
+
+    function activeUser() {
+      return signedIn() && profile().active == true;
+    }
+
+    function student() {
+      return activeUser() && profile().role == 'student';
+    }
+
+    function admin() {
+      return activeUser() && profile().role == 'admin';
+    }
+
+    function validStudentProfile(data) {
+      return data.keys().hasAll([
+          'name', 'email', 'studentId', 'program', 'role', 'active',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'name', 'email', 'studentId', 'program', 'role', 'active',
+          'createdAt', 'updatedAt'
+        ])
+        && data.name is string
+        && data.email is string
+        && data.studentId is string
+        && data.program is string
+        && data.role == 'student'
+        && data.active == true
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function validStudentSelfUpdate() {
+      return student()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['name', 'studentId', 'program', 'updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.studentId is string
+        && request.resource.data.studentId.size() > 0
+        && request.resource.data.program is string
+        && request.resource.data.program.size() > 0
+        && request.resource.data.updatedAt is timestamp
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.active == resource.data.active
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    match /users/{uid} {
+      allow create: if validStudentProfile(request.resource.data)
+        && (
+          (signedIn() && request.auth.uid == uid)
+          || admin()
+        );
+      allow read: if admin() || (signedIn() && request.auth.uid == uid);
+      allow update: if admin()
+        || (signedIn() && request.auth.uid == uid && validStudentSelfUpdate());
+      allow delete: if false;
+
+      match /notifications/{notificationId} {
+        function requestPath() {
+          return /databases/$(database)/documents/requests/$(request.resource.data.requestId);
+        }
+
+        function validNotification() {
+          return request.resource.data.keys().hasAll([
+              'ownerId', 'requestId', 'reference', 'documentType', 'status',
+              'title', 'message', 'type', 'read', 'createdAt'
+            ])
+            && request.resource.data.keys().hasOnly([
+              'ownerId', 'requestId', 'reference', 'documentType', 'status',
+              'title', 'message', 'type', 'read', 'createdAt'
+            ])
+            && request.resource.data.ownerId == uid
+            && request.resource.data.requestId is string
+            && request.resource.data.reference is string
+            && request.resource.data.documentType is string
+            && request.resource.data.status is string
+            && request.resource.data.title is string
+            && request.resource.data.message is string
+            && request.resource.data.type in ['request_received', 'status_update']
+            && request.resource.data.read == false
+            && request.resource.data.createdAt is timestamp
+            && existsAfter(requestPath())
+            && getAfter(requestPath()).data.ownerId == uid
+            && getAfter(requestPath()).data.reference
+              == request.resource.data.reference
+            && getAfter(requestPath()).data.documentType
+              == request.resource.data.documentType
+            && getAfter(requestPath()).data.status
+              == request.resource.data.status;
+        }
+
+        allow read: if activeUser()
+          && (admin() || request.auth.uid == uid);
+        allow create: if activeUser()
+          && validNotification()
+          && (
+            admin()
+            || (
+              student()
+              && request.auth.uid == uid
+              && request.resource.data.type == 'request_received'
+              && request.resource.data.status == 'Pending'
+              && !exists(requestPath())
+            )
+          );
+        allow update: if student()
+          && request.auth.uid == uid
+          && resource.data.ownerId == uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['read', 'readAt'])
+          && request.resource.data.read == true
+          && request.resource.data.readAt is timestamp;
+        allow delete: if false;
+      }
+    }
+
+    match /documentTypes/{documentTypeId} {
+      allow read: if admin()
+        || (activeUser() && resource.data.active == true);
+      allow create, update, delete: if admin();
+    }
+
+    match /requests/{requestId} {
+      allow create: if (
+          admin()
+          || (
+            student()
+            && request.resource.data.ownerId == request.auth.uid
+          )
+        )
+        && request.resource.data.status == 'Pending'
+        && (
+          !('preferredPickupAt' in request.resource.data)
+          || (
+            request.resource.data.preferredPickupAt is timestamp
+            && request.resource.data.preferredPickupAt > request.time
+          )
+        )
+        && request.resource.data.keys().hasOnly([
+          'reference', 'ownerId', 'studentName', 'studentEmail',
+          'documentType', 'purpose', 'copies', 'notes', 'status',
+          'preferredPickupAt', 'createdAt', 'updatedAt'
+        ]);
+      allow read: if admin()
+        || (activeUser() && resource.data.ownerId == request.auth.uid);
+      allow update: if admin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'updatedAt'])
+        && request.resource.data.status in [
+          'Pending', 'Verified', 'Processing', 'Ready for Claim',
+          'Completed', 'Rejected'
+        ];
+      allow delete: if admin();
+    }
+  }
+}

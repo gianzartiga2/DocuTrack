@@ -1,0 +1,29 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "docutrack-4f32d",
+          "appId": "1:758167328872:android:d417aa15351477eea183dd",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "docutrack-4f32d",
+          "configurations": {
+            "android": "1:758167328872:android:d417aa15351477eea183dd",
+            "ios": "1:758167328872:ios:ba1bea582f652fd5a183dd",
+            "macos": "1:758167328872:ios:ba1bea582f652fd5a183dd",
+            "web": "1:758167328872:web:541d8596bbe5bcd2a183dd",
+            "windows": "1:758167328872:web:d8c1810b6380239da183dd"
+          }
+        }
+      }
+    }
+  }
+}
