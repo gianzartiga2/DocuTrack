@@ -130,7 +130,8 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (notification.status.toLowerCase()) {
+    final normalizedStatus = notification.status.trim().toLowerCase();
+    final color = switch (normalizedStatus) {
       'ready for claim' || 'completed' => AppColors.green,
       'rejected' => AppColors.red,
       'processing' || 'verified' => AppColors.primary,

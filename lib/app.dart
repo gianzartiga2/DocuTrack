@@ -120,19 +120,46 @@ class _DocuTrackAppState extends State<DocuTrackApp>
       '/forgot-password': (_) =>
           ForgotPasswordScreen(onDarkModeChanged: _setDarkMode),
       '/documents': (_) => const DocumentTypesScreen(),
-      '/request-form': (context) => RequestFormScreen(
-        documentType:
-            ModalRoute.of(context)!.settings.arguments as DocumentType,
-      ),
-      '/confirmation': (context) => ConfirmationScreen(
-        reference: ModalRoute.of(context)!.settings.arguments as String,
-      ),
-      '/request-details': (context) => RequestDetailsScreen(
-        request: ModalRoute.of(context)!.settings.arguments as DocumentRequest,
-      ),
-      '/track': (context) => TrackRequestScreen(
-        request: ModalRoute.of(context)!.settings.arguments as DocumentRequest,
-      ),
+      '/request-form': (context) {
+        final documentType = _routeArgument<DocumentType>(context);
+        if (documentType == null) {
+          return const _RouteArgumentErrorScreen(
+            title: 'Request data missing',
+            message: 'Open this screen from a valid document selection.',
+          );
+        }
+        return RequestFormScreen(documentType: documentType);
+      },
+      '/confirmation': (context) {
+        final reference = _routeArgument<String>(context);
+        if (reference == null) {
+          return const _RouteArgumentErrorScreen(
+            title: 'Request reference missing',
+            message: 'This confirmation screen needs a valid request reference.',
+          );
+        }
+        return ConfirmationScreen(reference: reference);
+      },
+      '/request-details': (context) {
+        final request = _routeArgument<DocumentRequest>(context);
+        if (request == null) {
+          return const _RouteArgumentErrorScreen(
+            title: 'Request unavailable',
+            message: 'Choose a request from your list to view its details.',
+          );
+        }
+        return RequestDetailsScreen(request: request);
+      },
+      '/track': (context) {
+        final request = _routeArgument<DocumentRequest>(context);
+        if (request == null) {
+          return const _RouteArgumentErrorScreen(
+            title: 'Request unavailable',
+            message: 'Select a request to track its progress.',
+          );
+        }
+        return TrackRequestScreen(request: request);
+      },
     },
     home: FutureBuilder<FirebaseApp>(
       future: _firebase,
@@ -153,6 +180,11 @@ class _DocuTrackAppState extends State<DocuTrackApp>
       },
     ),
   );
+
+  static T? _routeArgument<T>(BuildContext context) {
+    final argument = ModalRoute.of(context)?.settings.arguments;
+    return argument is T ? argument : null;
+  }
 
   ThemeData _buildTheme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
@@ -552,6 +584,57 @@ class _MessageScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 action,
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _RouteArgumentErrorScreen extends StatelessWidget {
+  const _RouteArgumentErrorScreen({
+    required this.title,
+    required this.message,
+  });
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline_rounded, size: 48, color: AppColors.red),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.text,
+                  ),
+                ),
+                const SizedBox(height: 9),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.muted, height: 1.5),
+                ),
+                const SizedBox(height: 14),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Go back'),
+                ),
               ],
             ),
           ),

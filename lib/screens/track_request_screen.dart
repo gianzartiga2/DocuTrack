@@ -16,7 +16,7 @@ class TrackRequestScreen extends StatelessWidget {
     'Completed',
   ];
 
-  int _currentStep(String status) => switch (status.toLowerCase()) {
+  int _currentStep(String status) => switch (status.trim().toLowerCase()) {
     'verified' => 1,
     'processing' => 2,
     'ready for claim' => 3,
