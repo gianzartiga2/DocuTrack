@@ -122,7 +122,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 key: const ValueKey('requests-error'),
                 child: WhiteCard(
                   child: Text(
-                    'Could not load your requests: ${snapshot.error}',
+                    'Could not load your requests: ${DocuTrackService.formatFirestoreError(snapshot.error!)}',
                     style: const TextStyle(color: AppColors.red),
                   ),
                 ),

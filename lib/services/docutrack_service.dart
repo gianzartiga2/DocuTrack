@@ -782,6 +782,11 @@ class DocuTrackService {
   Future<void> deleteRequest(String id) =>
       firestore.collection('requests').doc(id).delete();
 
+  static String formatFirestoreError(Object error) {
+    if (error is FirebaseException) return _firestoreMessageStatic(error);
+    return error.toString().replaceFirst('Exception: ', '');
+  }
+
   String _authMessage(FirebaseAuthException error) => switch (error.code) {
     'email-already-in-use' => 'An account already exists for this email.',
     'invalid-email' => 'Enter a valid email address.',
@@ -802,11 +807,14 @@ class DocuTrackService {
     _ => error.message ?? 'Authentication failed. Please try again.',
   };
 
-  String _firestoreMessage(FirebaseException error) => switch (error.code) {
+  static String _firestoreMessageStatic(FirebaseException error) => switch (error.code) {
     'permission-denied' => 'Publish firestore.rules from the project root in your Firebase project, and confirm the account is allowed to create its own student profile.',
     'unavailable' || 'deadline-exceeded' => 'Firestore is unavailable. Check your network and confirm that a Firestore database has been created.',
     'not-found' => 'The Firestore database was not found. Create a Cloud Firestore database in this Firebase project.',
     _ =>
       'Firestore error (${error.code}): ${error.message ?? 'Unknown error.'}',
   };
+
+  String _firestoreMessage(FirebaseException error) =>
+      _firestoreMessageStatic(error);
 }

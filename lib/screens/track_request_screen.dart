@@ -43,7 +43,7 @@ class TrackRequestScreen extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Text(
-                            'Could not load request status: ${snapshot.error}',
+                            'Could not load request status: ${DocuTrackService.formatFirestoreError(snapshot.error!)}',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: AppColors.red),
                           ),

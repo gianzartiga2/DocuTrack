@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:docutrack2/screens/login_screen.dart';
 import 'package:docutrack2/screens/account_support_screens.dart';
 import 'package:docutrack2/screens/confirmation_screen.dart';
@@ -261,6 +262,21 @@ void main() {
 
     expect(find.text('3'), findsOneWidget);
     expect(find.text('Updates'), findsOneWidget);
+  });
+
+  test('firestore permission errors show actionable guidance', () {
+    final message = DocuTrackService.formatFirestoreError(
+      FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+        message: 'Missing or insufficient permissions.',
+      ),
+    );
+
+    expect(
+      message,
+      contains('Publish firestore.rules from the project root'),
+    );
   });
 
   testWidgets('animated state changes respect reduced-motion settings', (

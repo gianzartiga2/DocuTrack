@@ -21,7 +21,7 @@ class DocumentTypesScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Could not load documents: ${snapshot.error}',
+                        'Could not load documents: ${DocuTrackService.formatFirestoreError(snapshot.error!)}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: AppColors.red),
                       ),

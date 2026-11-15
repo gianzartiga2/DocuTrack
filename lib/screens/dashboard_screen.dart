@@ -225,7 +225,11 @@ class DashboardScreen extends StatelessWidget {
             return AppAnimatedSwitcher(
               child: KeyedSubtree(
                 key: const ValueKey('dashboard-requests-error'),
-                child: _StreamError(error: snapshot.error!),
+                child: _StreamError(
+                  error: DocuTrackService.formatFirestoreError(
+                    snapshot.error!,
+                  ),
+                ),
               ),
             );
           }
@@ -457,7 +461,7 @@ class _InfoPill extends StatelessWidget {
 
 class _StreamError extends StatelessWidget {
   const _StreamError({required this.error});
-  final Object error;
+  final String error;
 
   @override
   Widget build(BuildContext context) => WhiteCard(

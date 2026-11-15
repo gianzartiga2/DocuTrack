@@ -37,7 +37,7 @@ class NotificationsScreen extends StatelessWidget {
                 key: const ValueKey('notifications-error'),
                 child: WhiteCard(
                   child: Text(
-                    'Could not load updates: ${snapshot.error}',
+                    'Could not load updates: ${DocuTrackService.formatFirestoreError(snapshot.error!)}',
                     style: const TextStyle(color: AppColors.red),
                   ),
                 ),
