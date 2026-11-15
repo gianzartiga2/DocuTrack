@@ -45,6 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         studentId: _studentId.text,
         program: _program.text,
       );
+      await DocuTrackService.instance.signIn(_email.text, _password.text);
       if (mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
       }

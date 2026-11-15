@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:docutrack2/screens/dashboard_screen.dart';
 import 'package:docutrack2/screens/login_screen.dart';
 import 'package:docutrack2/screens/account_support_screens.dart';
 import 'package:docutrack2/screens/confirmation_screen.dart';
@@ -26,6 +27,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Welcome Back!'), findsOneWidget);
+  });
+
+  testWidgets('dashboard display helpers handle blank profile fields safely', (
+    tester,
+  ) async {
+    expect(DashboardScreen.greetingName('   '), 'STUDENT');
+    expect(DashboardScreen.greetingName('  gian zartiga  '), 'GIAN');
+    expect(DashboardScreen.displayName('   '), 'Student');
+    expect(DashboardScreen.displayStudentId('   '), 'Student ID unavailable');
   });
 
   testWidgets('login validates credentials before contacting Firebase', (
@@ -273,10 +283,8 @@ void main() {
       ),
     );
 
-    expect(
-      message,
-      contains('Publish firestore.rules from the project root'),
-    );
+    expect(message, contains('active users/{UID} profile'));
+    expect(message, contains('docutrack-4f32d'));
   });
 
   testWidgets('animated state changes respect reduced-motion settings', (

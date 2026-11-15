@@ -310,6 +310,11 @@ class DocuTrackService {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
+      await user.reload();
+      final refreshed = auth.currentUser;
+      if (refreshed == null || refreshed.uid != user.uid) {
+        throw Exception('Your sign-in session could not be refreshed.');
+      }
     } on FirebaseAuthException catch (error) {
       throw Exception(_authMessage(error));
     } catch (error) {
@@ -807,13 +812,17 @@ class DocuTrackService {
     _ => error.message ?? 'Authentication failed. Please try again.',
   };
 
-  static String _firestoreMessageStatic(FirebaseException error) => switch (error.code) {
-    'permission-denied' => 'Publish firestore.rules from the project root in your Firebase project, and confirm the account is allowed to create its own student profile.',
-    'unavailable' || 'deadline-exceeded' => 'Firestore is unavailable. Check your network and confirm that a Firestore database has been created.',
-    'not-found' => 'The Firestore database was not found. Create a Cloud Firestore database in this Firebase project.',
-    _ =>
-      'Firestore error (${error.code}): ${error.message ?? 'Unknown error.'}',
-  };
+  static String _firestoreMessageStatic(FirebaseException error) =>
+      switch (error.code) {
+        'permission-denied' =>
+          'Firestore denied this operation. Confirm the signed-in account has an active users/{UID} profile with the correct role, and that each request belongs to that UID. The rules for this operation must also be published to docutrack-4f32d.',
+        'unavailable' || 'deadline-exceeded' =>
+          'Firestore is unavailable. Check your network and confirm that a Firestore database has been created.',
+        'not-found' =>
+          'The Firestore database was not found. Create a Cloud Firestore database in this Firebase project.',
+        _ =>
+          'Firestore error (${error.code}): ${error.message ?? 'Unknown error.'}',
+      };
 
   String _firestoreMessage(FirebaseException error) =>
       _firestoreMessageStatic(error);

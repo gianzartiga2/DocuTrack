@@ -13,6 +13,22 @@ class DashboardScreen extends StatelessWidget {
   final StudentProfile profile;
   final ValueChanged<int> onSelectTab;
 
+  static String greetingName(String value) {
+    final trimmedValue = value.trim();
+    if (trimmedValue.isEmpty) return 'STUDENT';
+    return trimmedValue.split(RegExp(r'\s+')).first.toUpperCase();
+  }
+
+  static String displayName(String value) {
+    final trimmedValue = value.trim();
+    return trimmedValue.isEmpty ? 'Student' : trimmedValue;
+  }
+
+  static String displayStudentId(String value) {
+    final trimmedValue = value.trim();
+    return trimmedValue.isEmpty ? 'Student ID unavailable' : trimmedValue;
+  }
+
   @override
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
@@ -74,7 +90,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       const SizedBox(height: 22),
       Text(
-        'GOOD DAY, ${profile.name.split(' ').first.toUpperCase()}',
+        'GOOD DAY, ${DashboardScreen.greetingName(profile.name)}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
@@ -100,8 +116,14 @@ class DashboardScreen extends StatelessWidget {
         spacing: 7,
         runSpacing: 7,
         children: [
-          _InfoPill(icon: Icons.person_outline_rounded, label: profile.name),
-          _InfoPill(icon: Icons.badge_outlined, label: profile.studentId),
+          _InfoPill(
+            icon: Icons.person_outline_rounded,
+            label: DashboardScreen.displayName(profile.name),
+          ),
+          _InfoPill(
+            icon: Icons.badge_outlined,
+            label: DashboardScreen.displayStudentId(profile.studentId),
+          ),
         ],
       ),
       const SizedBox(height: 22),
